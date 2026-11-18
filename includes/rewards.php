@@ -173,6 +173,11 @@ function daily_leaderboard(array $scores): array
         $users[$u['username']] = $u;
     }
 
+    $history = [];
+    foreach (filter_scores(['mode' => 'daily']) as $s) {
+        $history[$s['username']][] = $s;
+    }
+
     $table = [];
     foreach ($scores as $s) {
         $u = $s['username'];
@@ -187,7 +192,7 @@ function daily_leaderboard(array $scores): array
 
     foreach ($table as $name => &$row) {
         $row['avg'] = $row['wins'] > 0 ? round($row['attempt_sum'] / $row['wins'], 2) : null;
-        $row['streak'] = streaks(daily_scores($name))['current'];
+        $row['streak'] = streaks($history[$name] ?? [])['current'];
         $row['avatar'] = avatar_of($users[$name] ?? []);
         $row['title'] = $row['avatar']['title'];
     }

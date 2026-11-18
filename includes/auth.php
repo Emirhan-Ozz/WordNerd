@@ -66,12 +66,6 @@ function current_user(): ?array
     return $user;
 }
 
-function is_admin(): bool
-{
-    $user = current_user();
-    return $user !== null && $user['role'] === 'admin';
-}
-
 function require_login(): array
 {
     $user = current_user();

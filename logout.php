@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/config.php';
-logout_user();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && check_csrf()) {
+    logout_user();
+}
 header('Location: login.php');
 exit;

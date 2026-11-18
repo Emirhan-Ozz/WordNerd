@@ -55,7 +55,10 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
                 <?= avatar_tag(avatar_of($user), 30) ?>
                 <span>@<?= e($user['username']) ?></span>
             </a>
-            <a class="btn small ghost" href="logout.php" data-i18n="logout">Çıkış</a>
+            <form method="post" action="logout.php" class="logout-form">
+                <?= csrf_field() ?>
+                <button class="btn small ghost" data-i18n="logout">Çıkış</button>
+            </form>
         <?php endif; ?>
     </div>
 </header>

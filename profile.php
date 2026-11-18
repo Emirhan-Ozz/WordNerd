@@ -34,11 +34,8 @@ $recent = array_slice(array_reverse($scores), 0, 10);
 $rewardItems = [];
 foreach (AVATAR_CATALOG as $slot => $items) {
     foreach ($items as $item => $need) {
-        if ($need !== null && $slot !== 'title') {
+        if ($need !== null) {
             $rewardItems[$need][] = "{$slot}_{$item}";
-        }
-        if ($need !== null && $slot === 'title') {
-            $rewardItems[$need][] = "title_{$item}";
         }
     }
 }

@@ -4,9 +4,7 @@ ini_set('display_errors', '1');
 
 date_default_timezone_set('Europe/Istanbul');
 
-define('ROOT_DIR',  __DIR__);
 define('DATA_DIR',  __DIR__ . '/data');
-define('WORDS_DIR', DATA_DIR . '/words');
 
 define('LANGS',       ['tr', 'en']);
 define('LENGTHS',     [5]);

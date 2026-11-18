@@ -16,7 +16,6 @@ function http_get_json(string $url): array
         ]);
         $body = curl_exec($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
     } elseif (ini_get('allow_url_fopen')) {
         $ctx = stream_context_create(['http' => [
             'timeout'       => 6,

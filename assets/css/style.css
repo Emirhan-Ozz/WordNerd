@@ -170,6 +170,7 @@ a { color: var(--accent); }
 .nav a:hover { background: var(--surface-2); color: var(--text); }
 .nav a.active { background: var(--surface-2); color: var(--text); }
 .tools { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.logout-form { margin: 0; }
 .who { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .9rem; text-decoration: none; }
 .who:hover { color: var(--text); }
 
