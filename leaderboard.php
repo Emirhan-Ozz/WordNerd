@@ -2,8 +2,12 @@
 require_once __DIR__ . '/config.php';
 $user = require_login();
 
-$f = read_filters(['lang', 'period']);
-$rows = daily_leaderboard(filter_scores($f + ['mode' => 'daily']));
+$f = read_filters(['lang', 'period', 'scope']);
+$query = $f + ['mode' => 'daily'];
+if ($f['scope'] === 'following') {
+    $query['usernames'] = array_merge(following_of($user['username']), [$user['username']]);
+}
+$rows = daily_leaderboard(filter_scores($query));
 
 page_header('nav_leaderboard', 'Liderlik', 'leaderboard.php');
 ?>

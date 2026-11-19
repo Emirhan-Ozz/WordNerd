@@ -23,7 +23,7 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
             var theme = localStorage.getItem('wn_theme') || 'classic';
             if (theme === 'claude') { theme = 'chill'; localStorage.setItem('wn_theme', theme); }
             document.documentElement.dataset.theme = theme;
-            if (localStorage.getItem('wn_contrast') === 'high') { document.documentElement.dataset.contrast = 'high'; }
+            if (localStorage.getItem('wn_colorblind') === 'on' || localStorage.getItem('wn_contrast') === 'high') { document.documentElement.dataset.colorblind = 'on'; }
             document.documentElement.lang = localStorage.getItem('wn_ui_lang') || 'tr';
         } catch (e) {}
     </script>
@@ -57,9 +57,17 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
             <option value="chill" data-i18n="theme_chill">Chill</option>
             <option value="ruby" data-i18n="theme_ruby">Ruby</option>
         </select>
-        <button id="contrastBtn" class="btn small" type="button" aria-pressed="false" title="Yüksek kontrast" data-i18n-title="high_contrast" aria-label="Yüksek kontrast"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+        <button id="colorblindBtn" class="btn small" type="button" aria-pressed="false" title="Renk körü modu" data-i18n-title="colorblind_mode" aria-label="Renk körü modu"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
         <button id="uiLangBtn" class="btn small" type="button" title="Arayüz dili">EN</button>
         <?php if ($user !== null): ?>
+            <?php $unread = unread_count($user['username']); ?>
+            <a class="icon-btn" href="notifications.php" title="Bildirimler" data-i18n-title="notifications" aria-label="Bildirimler">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z M10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                <?php if ($unread > 0): ?><span class="badge-dot"><?= $unread > 9 ? '9+' : $unread ?></span><?php endif; ?>
+            </a>
+            <a class="icon-btn" href="settings.php" title="Ayarlar" data-i18n-title="settings" aria-label="Ayarlar">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </a>
             <a class="who" href="profile.php" title="Profil" data-i18n-title="nav_profile">
                 <?= avatar_tag(avatar_of($user), 30) ?>
                 <span>@<?= e($user['username']) ?></span>

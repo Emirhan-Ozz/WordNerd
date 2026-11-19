@@ -15,6 +15,9 @@ WordNerd/
 ├── search.php           @kullanıcı arama
 ├── follow.php           Takip et / takipten çık
 ├── follows.php          Takipçi ve takip edilen listeleri
+├── challenge.php        Meydan okuma sonuçları
+├── notifications.php    Bildirimler
+├── settings.php         Hesap ayarları (şifre, hesabı silme)
 ├── admin.php            Yönetim paneli (kelimeler, sözlük kontrolü, kullanıcılar, skorlar)
 ├── router.php           Sadece php -S için erişim kuralları
 ├── config.php           Ayarlar, session, include'lar
@@ -30,6 +33,10 @@ WordNerd/
 │   ├── scores.php       Skor kaydı, filtreleme, istatistik
 │   ├── rewards.php      Avatar, seri, puan, ödüller, liderlik
 │   ├── social.php       Takip sistemi ve kullanıcı arama
+│   ├── notifications.php Bildirimler
+│   ├── challenges.php   Meydan okumalar
+│   ├── account.php      Şifre değiştirme, hesap silme
+│   ├── backup.php       Yedekleme ve geri yükleme
 │   ├── dictionary.php   TDK ve Free Dictionary API, önbellek
 │   ├── filters.php      Dil/zaman filtre formu
 │   └── layout.php       Ortak üst bar ve alt bilgi
@@ -37,6 +44,9 @@ WordNerd/
 │   ├── users.json
 │   ├── scores.json
 │   ├── definitions.json
+│   ├── challenges.json
+│   ├── notifications.json
+│   ├── backups/         Sunucudaki otomatik yedekler
 │   └── words/words_{tr|en}_5.json
 └── assets/
     ├── css/style.css    6 tema: Classic, Aqua, Neon, Granite, Chill, Ruby

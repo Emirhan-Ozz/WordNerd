@@ -26,6 +26,7 @@ function set_follow(string $me, string $target, bool $follow): bool
     if ($me === $target || find_user($target) === null) {
         return false;
     }
+    $wasFollowing = is_following($me, $target);
     $users = read_json('users.json');
     foreach ($users as &$u) {
         if ($u['username'] === $me) {
@@ -38,6 +39,9 @@ function set_follow(string $me, string $target, bool $follow): bool
     }
     unset($u);
     write_json('users.json', $users);
+    if ($follow && !$wasFollowing) {
+        notify($target, 'follow', $me);
+    }
     return true;
 }
 

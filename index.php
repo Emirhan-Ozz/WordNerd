@@ -49,9 +49,12 @@ page_header('nav_play', 'Oyna', 'index.php');
     </div>
     <div class="definition" id="definitionBox" aria-live="polite"></div>
     <pre id="shareText" class="share-text"></pre>
+    <input type="text" id="challengeLink" class="challenge-link" readonly hidden aria-label="Meydan okuma linki">
     <div class="dialog-actions">
         <button type="button" class="btn primary" id="shareBtn" data-i18n="share">Sonucu kopyala</button>
         <button type="button" class="btn" id="newGameBtn" data-i18n="new_game">Yeni oyun</button>
+        <button type="button" class="btn" id="challengeBtn" data-i18n="challenge_friend">Arkadaşına meydan oku</button>
+        <a class="btn ghost" id="challengeResults" href="#" hidden data-i18n="challenge_results">Meydan okuma sonuçları</a>
         <a class="btn ghost" href="profile.php" data-i18n="nav_profile">Profil</a>
         <button type="button" class="btn ghost" id="closeDialogBtn" data-i18n="close">Kapat</button>
     </div>

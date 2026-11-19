@@ -52,15 +52,18 @@ function hard_mode_error(string $guess, array $rows, string $lang): ?array
     return null;
 }
 
-function new_game(string $lang, int $length, string $mode, bool $hard): array
+function new_game(string $lang, int $length, string $mode, bool $hard, ?string $answer = null): array
 {
+    if ($answer === null) {
+        $answer = $mode === 'daily' ? daily_word($lang, $length) : random_word($lang, $length);
+    }
     return [
         'lang'   => $lang,
         'length' => $length,
         'mode'   => $mode,
         'hard'   => $hard,
         'date'   => date('Y-m-d'),
-        'answer' => $mode === 'daily' ? daily_word($lang, $length) : random_word($lang, $length),
+        'answer' => $answer,
         'rows'   => [],
         'status' => 'playing',
     ];
@@ -99,10 +102,19 @@ function apply_guess(array &$game, string $word): ?array
 
 function finish_if_needed(array &$game, string $username): void
 {
-    if ($game['status'] !== 'playing' && empty($game['saved'])) {
-        add_score($username, $game);
-        $game['saved'] = true;
+    if ($game['status'] === 'playing' || !empty($game['saved'])) {
+        return;
     }
+    if ($game['mode'] === 'challenge') {
+        add_challenge_result($game['challenge'], $username, $game);
+    } elseif ($game['mode'] === 'daily') {
+        $before = daily_points($username);
+        add_score($username, $game);
+        notify_passed($username, $before, daily_points($username));
+    } else {
+        add_score($username, $game);
+    }
+    $game['saved'] = true;
 }
 
 function public_state(array $game): array
@@ -119,6 +131,13 @@ function public_state(array $game): array
     ];
     if ($game['status'] !== 'playing') {
         $state['answer'] = $game['answer'];
+    }
+    if ($game['mode'] === 'challenge') {
+        $state['challenge'] = $game['challenge'];
+        $state['creator'] = $game['creator'];
+    }
+    if (!empty($game['challenge_id'])) {
+        $state['challenge'] = $game['challenge_id'];
     }
     return $state;
 }
@@ -157,6 +176,32 @@ function start_game(array $user, string $lang, int $length, string $mode, bool $
         $game['hard'] = $hard;
     }
 
+    $_SESSION['games'][$key] = $game;
+    return public_state($game);
+}
+
+function start_challenge(array $user, array $challenge, bool $hard): array
+{
+    $key = 'challenge_' . $challenge['id'];
+    $done = $challenge['results'][$user['username']] ?? null;
+    $game = $_SESSION['games'][$key] ?? null;
+
+    if ($done !== null) {
+        $game = new_game($challenge['lang'], 5, 'challenge', $done['hard'], $challenge['answer']);
+        foreach ($done['words'] as $w) {
+            $game['rows'][] = ['word' => $w, 'marks' => evaluate_guess($w, $game['answer'])];
+        }
+        $game['status'] = $done['won'] ? 'won' : 'lost';
+        $game['saved'] = true;
+    } elseif ($game === null) {
+        $game = new_game($challenge['lang'], 5, 'challenge', $hard, $challenge['answer']);
+    }
+    $game['challenge'] = $challenge['id'];
+    $game['creator'] = $challenge['creator'];
+
+    if ($game['status'] === 'playing' && count($game['rows']) === 0) {
+        $game['hard'] = $hard;
+    }
     $_SESSION['games'][$key] = $game;
     return public_state($game);
 }

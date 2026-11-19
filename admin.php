@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config.php';
 $me = require_admin();
 
-$tab    = in_array($_GET['tab'] ?? '', ['words', 'dict', 'users', 'scores'], true) ? $_GET['tab'] : 'words';
+$tab    = in_array($_GET['tab'] ?? '', ['words', 'dict', 'users', 'scores', 'backup'], true) ? $_GET['tab'] : 'words';
 $lang   = in_array($_GET['lang'] ?? '', LANGS, true) ? $_GET['lang'] : 'tr';
 $length = 5;
 $q      = trim((string)($_GET['q'] ?? ''));
@@ -69,6 +69,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mark_definition_reviewed($dlang, $word);
             back('msg_word_removed');
 
+        case 'backup_download':
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="wordnerd-' . backup_filename('backup') . '"');
+            echo json_encode(make_backup(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            exit;
+
+        case 'backup_get':
+            $content = read_auto_backup((string)($_POST['name'] ?? ''));
+            if ($content === null) {
+                back('err_backup_invalid', 'error');
+            }
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="wordnerd-' . basename((string)$_POST['name']) . '"');
+            echo $content;
+            exit;
+
+        case 'backup_now':
+            save_auto_backup();
+            back('msg_backup_saved');
+
+        case 'backup_restore':
+            $file = $_FILES['backup']['tmp_name'] ?? '';
+            if ($file === '' || !is_uploaded_file($file) || ($_FILES['backup']['size'] ?? 0) > 20 * 1024 * 1024) {
+                back('err_backup_invalid', 'error');
+            }
+            $data = json_decode((string)file_get_contents($file), true);
+            $err = validate_backup($data);
+            if ($err !== null) {
+                back($err, 'error');
+            }
+            restore_backup($data);
+            back('msg_backup_restored');
+
         case 'toggle_role':
             $users = read_json('users.json');
             foreach ($users as &$u) {
@@ -85,9 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($name === $me['username']) {
                 back('err_self_delete', 'error');
             }
-            write_json('users.json', array_values(array_filter(read_json('users.json'), fn($u) => $u['username'] !== $name)));
-            write_json('scores.json', array_values(array_filter(read_json('scores.json'), fn($s) => $s['username'] !== $name)));
-            remove_from_all_follows($name);
+            delete_account($name);
             back('msg_deleted');
 
         case 'delete_score':
@@ -110,6 +141,7 @@ page_header('nav_admin', 'Yönetim', 'admin.php');
             <a href="?tab=words" class="<?= $tab === 'words' ? 'active' : '' ?>" data-i18n="tab_words">Kelimeler</a>
             <a href="?tab=dict" class="<?= $tab === 'dict' ? 'active' : '' ?>" data-i18n="tab_dict">Sözlük kontrolü</a>
             <a href="?tab=users" class="<?= $tab === 'users' ? 'active' : '' ?>" data-i18n="tab_users">Kullanıcılar</a>
+            <a href="?tab=backup" class="<?= $tab === 'backup' ? 'active' : '' ?>" data-i18n="tab_backup">Yedekleme</a>
             <a href="?tab=scores" class="<?= $tab === 'scores' ? 'active' : '' ?>" data-i18n="tab_scores">Skorlar</a>
         </nav>
     </div>
@@ -188,6 +220,55 @@ page_header('nav_admin', 'Yönetim', 'admin.php');
         <?php endforeach; ?>
         </tbody>
     </table>
+    <?php endif; ?>
+
+<?php elseif ($tab === 'backup'):
+    $autos = list_auto_backups();
+?>
+    <div class="backup-grid">
+        <div>
+            <h3 data-i18n="backup_download_title">Yedek indir</h3>
+            <p class="muted" data-i18n="backup_download_hint">Kullanıcılar, skorlar, kelime listeleri, sözlük önbelleği, meydan okumalar ve bildirimler tek bir JSON dosyasına yazılır.</p>
+            <form method="post">
+                <?= csrf_field() ?>
+                <button class="btn primary" name="action" value="backup_download" data-i18n="backup_download_btn">Yedeği indir</button>
+                <button class="btn" name="action" value="backup_now" data-i18n="backup_now_btn">Sunucuda yedek al</button>
+            </form>
+        </div>
+        <div>
+            <h3 data-i18n="backup_restore_title">Yedekten geri yükle</h3>
+            <p class="muted" data-i18n="backup_restore_hint">Geri yüklemeden önce mevcut veriler otomatik olarak yedeklenir. Yedekte en az bir yönetici olmalı.</p>
+            <form method="post" enctype="multipart/form-data" onsubmit="return confirm(WN.t('confirm_restore'))">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="backup_restore">
+                <input type="file" name="backup" accept=".json,application/json" required>
+                <button class="btn danger" data-i18n="backup_restore_btn">Geri yükle</button>
+            </form>
+        </div>
+    </div>
+
+    <h3 data-i18n="backup_auto_title">Sunucudaki yedekler</h3>
+    <?php if (!$autos): ?>
+        <p class="muted" data-i18n="backup_none">Henüz sunucuda yedek yok.</p>
+    <?php else: ?>
+        <table class="table">
+            <thead><tr><th data-i18n="date">Tarih</th><th data-i18n="size">Boyut</th><th></th></tr></thead>
+            <tbody>
+            <?php foreach ($autos as $b): ?>
+                <tr>
+                    <td><?= e(date('d.m.Y H:i:s', $b['time'])) ?></td>
+                    <td><?= e(number_format($b['size'] / 1024, 1)) ?> KB</td>
+                    <td>
+                        <form method="post">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="name" value="<?= e($b['name']) ?>">
+                            <button class="btn small" name="action" value="backup_get" data-i18n="download">İndir</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
     <?php endif; ?>
 
 <?php elseif ($tab === 'users'):

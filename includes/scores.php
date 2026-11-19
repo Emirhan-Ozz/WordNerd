@@ -42,6 +42,7 @@ function filter_scores(array $f): array
     return array_values(array_filter(read_json('scores.json'), function ($s) use ($f, $since) {
         return in_array($s['length'], LENGTHS, true)
             && (empty($f['username']) || $s['username'] === $f['username'])
+            && (!isset($f['usernames']) || in_array($s['username'], $f['usernames'], true))
             && (empty($f['lang'])     || $s['lang'] === $f['lang'])
             && (empty($f['length'])   || $s['length'] === (int)$f['length'])
             && (empty($f['mode'])     || $s['mode'] === $f['mode'])

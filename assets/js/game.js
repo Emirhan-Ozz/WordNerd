@@ -8,8 +8,8 @@
     en: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'],
   };
   const EMOJI = { correct: '🟩', present: '🟨', absent: '⬜' };
-  const EMOJI_HC = { correct: '🟧', present: '🟦', absent: '⬜' };
-  const emoji = () => (document.documentElement.dataset.contrast === 'high' ? EMOJI_HC : EMOJI);
+  const EMOJI_CB = { correct: '🟧', present: '🟦', absent: '⬜' };
+  const emoji = () => (document.documentElement.dataset.colorblind === 'on' ? EMOJI_CB : EMOJI);
 
   const $ = id => document.getElementById(id);
   const board = $('board'), keyboard = $('keyboard'), toast = $('toast'), sub = $('gameSub');
@@ -18,6 +18,9 @@
   const settings = Object.assign({ lang: 'tr', length: 5, mode: 'daily', hard: false },
                                  WN.store.get('wn_game_settings', {}));
   settings.length = 5;
+
+  const challengeId = new URLSearchParams(location.search).get('challenge');
+  if (challengeId) document.body.classList.add('challenge-mode');
 
   let state = null;
   let revealed = false;
@@ -43,7 +46,7 @@
         'Content-Type': 'application/json',
         'X-CSRF': document.querySelector('meta[name="csrf"]').content,
       },
-      body: JSON.stringify(Object.assign({ action }, settings, data)),
+      body: JSON.stringify(Object.assign({ action }, settings, challengeId ? { mode: 'challenge', challenge: challengeId } : {}, data)),
     });
     if (res.status === 401) { location.href = 'login.php'; return null; }
     return res.json();
@@ -112,6 +115,7 @@
       state = data.state;
       revealed = false;
       settings.hard = state.hard;
+      if (challengeId) settings.lang = state.lang;
       syncControls();
       render();
       if (state.status !== 'playing') setTimeout(openResult, 300);
@@ -207,8 +211,12 @@
   }
 
   function renderSub(animate) {
-    const label = WN.t(state.mode === 'daily' ? 'sub_daily' : 'sub_unlimited');
-    const tail = state.mode === 'daily' ? state.date : WN.t('sub_unlimited_tail');
+    const label = state.mode === 'challenge'
+      ? WN.t('sub_challenge', { u: '@' + state.creator })
+      : WN.t(state.mode === 'daily' ? 'sub_daily' : 'sub_unlimited');
+    const tail = state.mode === 'daily' ? state.date
+      : state.mode === 'challenge' ? (state.lang === 'tr' ? 'Türkçe' : 'English')
+      : WN.t('sub_unlimited_tail');
     sub.innerHTML = '';
     sub.append(label);
     if (state.status === 'lost' && revealed) {
@@ -273,8 +281,8 @@
   }
 
   function shareText() {
-    const head = `WordNerd ${state.lang.toUpperCase()} ${state.length} · ` +
-      (state.mode === 'daily' ? `${WN.t('share_daily')} ${state.date}` : WN.t('share_unlimited'));
+    const kind = { daily: `${WN.t('share_daily')} ${state.date}`, unlimited: WN.t('share_unlimited'), challenge: WN.t('share_challenge') };
+    const head = `WordNerd ${state.lang.toUpperCase()} ${state.length} · ${kind[state.mode]}`;
     const score = (state.status === 'won' ? state.rows.length : 'X') + '/' + state.max + (state.hard ? '*' : '');
     const grid = state.rows.map(r => r.marks.map(m => emoji()[m]).join('')).join('\n');
     return `${head} · ${score}\n\n${grid}`;
@@ -333,6 +341,9 @@
     WN.renderAvatars(dialog);
     $('shareText').textContent = shareText() + (state.mode === 'daily' ? '\n\n' + WN.t('daily_done') : '');
     $('newGameBtn').hidden = state.mode !== 'unlimited';
+    $('challengeBtn').hidden = state.mode !== 'unlimited';
+    $('challengeLink').hidden = true;
+    updateChallengeLink();
     if (!dialog.open) dialog.showModal();
     loadDefinition();
   }
@@ -354,6 +365,34 @@
 
   $('shareBtn').addEventListener('click', () => copy(shareText()));
   $('newGameBtn').addEventListener('click', () => { dialog.close(); start(true); });
+
+  function updateChallengeLink() {
+    const a = $('challengeResults');
+    a.hidden = !state.challenge;
+    if (state.challenge) a.href = 'challenge.php?id=' + encodeURIComponent(state.challenge);
+  }
+
+  $('challengeBtn').addEventListener('click', async () => {
+    if (busy) return;
+    busy = true;
+    try {
+      const data = await api('create_challenge', {});
+      if (!data || !data.ok) { showToast(WN.t(data ? data.error : 'err_network')); return; }
+      state.challenge = data.id;
+      const url = new URL('index.php?challenge=' + data.id, location.href).href;
+      const input = $('challengeLink');
+      input.value = url;
+      input.hidden = false;
+      input.select();
+      updateChallengeLink();
+      await copy(url);
+      showToast(WN.t('challenge_copied'));
+    } catch (e) {
+      showToast(WN.t('err_network'));
+    } finally {
+      busy = false;
+    }
+  });
   $('closeDialogBtn').addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => {
     if (state && state.status === 'lost' && !revealed) {
@@ -362,7 +401,7 @@
     }
   });
 
-  document.addEventListener('wn:contrastchange', () => {
+  document.addEventListener('wn:colorblindchange', () => {
     if (dialog.open) $('shareText').textContent = shareText() + (state.mode === 'daily' ? '\n\n' + WN.t('daily_done') : '');
   });
 

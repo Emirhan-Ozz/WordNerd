@@ -8,6 +8,9 @@ function read_filters(array $fields): array
     if (in_array('period', $fields, true)) {
         $f['period'] = in_array($_GET['period'] ?? '', ['today', 'week'], true) ? $_GET['period'] : '';
     }
+    if (in_array('scope', $fields, true)) {
+        $f['scope'] = ($_GET['scope'] ?? '') === 'following' ? 'following' : '';
+    }
     return $f;
 }
 
@@ -34,6 +37,12 @@ function filter_form(array $f, string $storageKey, array $hidden = []): void
             <?= $opt('', $f['period'], 'period_all', 'Tüm zamanlar') ?>
             <?= $opt('week', $f['period'], 'period_week', 'Son 7 gün') ?>
             <?= $opt('today', $f['period'], 'period_today', 'Bugün') ?>
+        </select>
+        <?php endif; ?>
+        <?php if (array_key_exists('scope', $f)): ?>
+        <select name="scope" onchange="this.form.submit()">
+            <?= $opt('', $f['scope'], 'scope_all', 'Herkes') ?>
+            <?= $opt('following', $f['scope'], 'scope_following', 'Takip ettiklerim') ?>
         </select>
         <?php endif; ?>
         <noscript><button class="btn small">Filtrele</button></noscript>

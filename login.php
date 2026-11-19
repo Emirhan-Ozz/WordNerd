@@ -26,6 +26,9 @@ page_header('login_title', 'Giriş yap');
 <section class="card auth">
     <h2 data-i18n="login_title">Giriş yap</h2>
     <?= alert_box($error) ?>
+    <?php if (isset($_GET['deleted'])): ?>
+        <?= alert_box('msg_account_deleted', 'success') ?>
+    <?php endif; ?>
     <?php if (isset($_GET['registered'])): ?>
         <?= alert_box('msg_registered', 'success') ?>
     <?php endif; ?>
