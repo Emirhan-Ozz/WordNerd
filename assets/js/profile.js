@@ -15,8 +15,12 @@
   });
 
   form.querySelectorAll('.swatch').forEach(el => {
-    const map = { skin: WN.avatarColors.SKIN, hairColor: WN.avatarColors.HAIR, bg: WN.avatarColors.BG }[el.dataset.slot];
-    el.style.background = map[el.dataset.item];
+    if (el.dataset.slot === 'bg') {
+      el.style.background = WN.avatarBgCss(el.dataset.item);
+    } else {
+      const map = { skin: WN.avatarColors.SKIN, hairColor: WN.avatarColors.HAIR }[el.dataset.slot];
+      el.style.background = map[el.dataset.item];
+    }
   });
 
   function lockTitles() {

@@ -1,11 +1,13 @@
 <?php
 require_once __DIR__ . '/config.php';
-$user = require_login();
+$me = require_login();
+$user = isset($_GET['u']) ? (find_user((string)$_GET['u']) ?? $me) : $me;
+$isMe = $user['username'] === $me['username'];
 
 $allDaily = daily_scores($user['username']);
 $ach = achievements($allDaily);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isMe) {
     if (check_csrf() && ($_POST['action'] ?? '') === 'save_avatar') {
         save_avatar($user['username'], validate_avatar($_POST['avatar'] ?? [], $ach));
         $_SESSION['flash'] = ['msg_avatar_saved', 'success'];
@@ -40,10 +42,14 @@ foreach (AVATAR_CATALOG as $slot => $items) {
     }
 }
 
+$followers = followers_of($user['username']);
+$following = following_of($user['username']);
+$qs = $isMe ? '' : 'u=' . rawurlencode($user['username']) . '&';
+
 $colorSlots = ['skin', 'hairColor', 'bg'];
 $shapeSlots = ['hair', 'face', 'outfit', 'hat', 'glasses'];
 
-page_header('nav_profile', 'Profil', 'profile.php');
+page_header('nav_profile', 'Profil', $isMe ? 'profile.php' : '');
 ?>
 <?= $flash ? alert_box($flash[0], $flash[1]) : '' ?>
 
@@ -60,9 +66,19 @@ page_header('nav_profile', 'Profil', 'profile.php');
             <div><b><?= $points ?></b><span data-i18n="points">Puan</span></div>
             <div><b><?= count(array_filter($ach, fn($a) => $a['unlocked'])) ?>/<?= count($ach) ?></b><span data-i18n="rewards">Ödüller</span></div>
         </div>
+        <div class="follow-stats">
+            <?= follow_preview($user['username'], 'followers', $followers) ?>
+            <?= follow_preview($user['username'], 'following', $following) ?>
+        </div>
     </div>
-    <button type="button" class="btn primary" id="editAvatarBtn" data-i18n="edit_avatar">Avatarı düzenle</button>
+    <?php if ($isMe): ?>
+        <button type="button" class="btn primary" id="editAvatarBtn" data-i18n="edit_avatar">Avatarı düzenle</button>
+    <?php else: ?>
+        <?= follow_button($me['username'], $user['username']) ?>
+    <?php endif; ?>
 </section>
+
+<?php if ($isMe): ?>
 
 <section class="card" id="avatarEditor" hidden>
     <div class="card-head">
@@ -112,6 +128,7 @@ page_header('nav_profile', 'Profil', 'profile.php');
         </div>
     </form>
 </section>
+<?php endif; ?>
 
 <section class="card">
     <h2 data-i18n="rewards">Ödüller</h2>
@@ -140,10 +157,10 @@ page_header('nav_profile', 'Profil', 'profile.php');
 <section class="card">
     <div class="card-head">
         <nav class="tabs">
-            <a href="?tab=daily" class="<?= $tab === 'daily' ? 'active' : '' ?>" data-i18n="mode_daily">Günlük</a>
-            <a href="?tab=unlimited" class="<?= $tab === 'unlimited' ? 'active' : '' ?>" data-i18n="mode_unlimited">Sınırsız</a>
+            <a href="?<?= $qs ?>tab=daily" class="<?= $tab === 'daily' ? 'active' : '' ?>" data-i18n="mode_daily">Günlük</a>
+            <a href="?<?= $qs ?>tab=unlimited" class="<?= $tab === 'unlimited' ? 'active' : '' ?>" data-i18n="mode_unlimited">Sınırsız</a>
         </nav>
-        <?php filter_form($f, 'wn_profile_filter_' . $tab, ['tab' => $tab]); ?>
+        <?php filter_form($f, ($isMe ? 'wn_profile_filter_' : 'wn_profile_other_') . $tab, $isMe ? ['tab' => $tab] : ['u' => $user['username'], 'tab' => $tab]); ?>
     </div>
 
     <div class="tiles">
@@ -187,4 +204,4 @@ page_header('nav_profile', 'Profil', 'profile.php');
         </table>
     <?php endif; ?>
 </section>
-<?php page_footer(['assets/js/profile.js']); ?>
+<?php page_footer($isMe ? ['assets/js/profile.js'] : []); ?>

@@ -18,6 +18,7 @@
   settings.length = 5;
 
   let state = null;
+  let revealed = false;
   let current = '';
   let busy = false;
 
@@ -107,6 +108,7 @@
       if (!data) return;
       if (!data.ok) { showToast(WN.t(data.error)); return; }
       state = data.state;
+      revealed = false;
       settings.hard = state.hard;
       syncControls();
       render();
@@ -173,9 +175,7 @@
   });
 
   function render(animateLast = false) {
-    sub.textContent = state.mode === 'daily'
-      ? WN.t('sub_daily', { date: state.date })
-      : WN.t('sub_unlimited');
+    renderSub(false);
 
     board.style.setProperty('--cols', state.length);
     board.innerHTML = '';
@@ -202,6 +202,21 @@
     renderCurrentRow();
     renderKeyboard();
     updateLock();
+  }
+
+  function renderSub(animate) {
+    const label = WN.t(state.mode === 'daily' ? 'sub_daily' : 'sub_unlimited');
+    const tail = state.mode === 'daily' ? state.date : WN.t('sub_unlimited_tail');
+    sub.innerHTML = '';
+    sub.append(label);
+    if (state.status === 'lost' && revealed) {
+      const ans = document.createElement('span');
+      ans.className = 'sub-answer' + (animate ? ' rise' : '');
+      ans.textContent = up(state.answer);
+      ans.setAttribute('aria-label', WN.t('the_word_was') + ' ' + up(state.answer));
+      sub.append(' · ', ans);
+    }
+    sub.append(' · ' + tail);
   }
 
   function renderCurrentRow() {
@@ -338,6 +353,12 @@
   $('shareBtn').addEventListener('click', () => copy(shareText()));
   $('newGameBtn').addEventListener('click', () => { dialog.close(); start(true); });
   $('closeDialogBtn').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    if (state && state.status === 'lost' && !revealed) {
+      revealed = true;
+      renderSub(true);
+    }
+  });
 
   document.addEventListener('wn:langchange', () => {
     if (!state) return;

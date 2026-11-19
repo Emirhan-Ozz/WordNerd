@@ -12,6 +12,9 @@ WordNerd/
 ├── logout.php           Çıkış
 ├── profile.php          Profil, avatar, ödüller, istatistikler
 ├── leaderboard.php      Günlük liderlik tablosu
+├── search.php           @kullanıcı arama
+├── follow.php           Takip et / takipten çık
+├── follows.php          Takipçi ve takip edilen listeleri
 ├── admin.php            Yönetim paneli (kelimeler, sözlük kontrolü, kullanıcılar, skorlar)
 ├── router.php           Sadece php -S için erişim kuralları
 ├── config.php           Ayarlar, session, include'lar
@@ -26,6 +29,7 @@ WordNerd/
 │   ├── game.php         Renk hesaplama, zor mod, oyun durumu
 │   ├── scores.php       Skor kaydı, filtreleme, istatistik
 │   ├── rewards.php      Avatar, seri, puan, ödüller, liderlik
+│   ├── social.php       Takip sistemi ve kullanıcı arama
 │   ├── dictionary.php   TDK ve Free Dictionary API, önbellek
 │   ├── filters.php      Dil/zaman filtre formu
 │   └── layout.php       Ortak üst bar ve alt bilgi
@@ -35,7 +39,7 @@ WordNerd/
 │   ├── definitions.json
 │   └── words/words_{tr|en}_5.json
 └── assets/
-    ├── css/style.css    5 tema: Classic, Aqua, Neon, Granite, Chill
+    ├── css/style.css    6 tema: Classic, Aqua, Neon, Granite, Chill, Ruby
     └── js/
         ├── i18n.js      TR/EN arayüz çevirileri
         ├── common.js    Tema, arayüz dili, filtre hafızası (localStorage)

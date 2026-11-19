@@ -30,7 +30,7 @@ page_header('nav_leaderboard', 'Liderlik', 'leaderboard.php');
                 <tr class="<?= $r['username'] === $user['username'] ? 'me' : '' ?>">
                     <td class="rank"><?= ['🥇', '🥈', '🥉'][$i] ?? $i + 1 ?></td>
                     <td>
-                        <div class="player">
+                        <a class="player" href="profile.php?u=<?= e(rawurlencode($r['username'])) ?>">
                             <?= avatar_tag($r['avatar'], 36) ?>
                             <div>
                                 <div><?= e($r['username']) ?></div>
@@ -38,7 +38,7 @@ page_header('nav_leaderboard', 'Liderlik', 'leaderboard.php');
                                     <small class="muted" data-i18n="title_<?= e($r['title']) ?>"><?= e($r['title']) ?></small>
                                 <?php endif; ?>
                             </div>
-                        </div>
+                        </a>
                     </td>
                     <td><b><?= $r['points'] ?></b></td>
                     <td><?= $r['wins'] ?></td>

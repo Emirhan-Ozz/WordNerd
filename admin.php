@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             write_json('users.json', array_values(array_filter(read_json('users.json'), fn($u) => $u['username'] !== $name)));
             write_json('scores.json', array_values(array_filter(read_json('scores.json'), fn($s) => $s['username'] !== $name)));
+            remove_from_all_follows($name);
             back('msg_deleted');
 
         case 'delete_score':

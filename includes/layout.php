@@ -41,6 +41,12 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
     </nav>
     <?php endif; ?>
 
+    <?php if ($user !== null): ?>
+    <form class="search-box" method="get" action="search.php" role="search">
+        <input name="q" placeholder="@kullanıcı ara" data-i18n-placeholder="search_placeholder" aria-label="Kullanıcı ara" data-i18n-title="search_users">
+    </form>
+    <?php endif; ?>
+
     <div class="tools">
         <select id="themeSelect" title="Tema" data-i18n-title="theme">
             <option value="classic" data-i18n="theme_classic">Classic</option>
@@ -48,6 +54,7 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
             <option value="neon" data-i18n="theme_neon">Neon</option>
             <option value="granite" data-i18n="theme_granite">Granite</option>
             <option value="chill" data-i18n="theme_chill">Chill</option>
+            <option value="ruby" data-i18n="theme_ruby">Ruby</option>
         </select>
         <button id="uiLangBtn" class="btn small" type="button" title="Arayüz dili">EN</button>
         <?php if ($user !== null): ?>

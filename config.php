@@ -30,6 +30,7 @@ require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/game.php';
 require_once __DIR__ . '/includes/scores.php';
 require_once __DIR__ . '/includes/rewards.php';
+require_once __DIR__ . '/includes/social.php';
 require_once __DIR__ . '/includes/dictionary.php';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/filters.php';
