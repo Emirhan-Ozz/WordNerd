@@ -18,11 +18,11 @@ WordNerd/
 ├── challenge.php        Meydan okuma sonuçları
 ├── notifications.php    Bildirimler
 ├── settings.php         Hesap ayarları (şifre, hesabı silme)
-├── admin.php            Yönetim paneli (kelimeler, sözlük kontrolü, kullanıcılar, skorlar)
+├── admin.php            Yönetim paneli (kelimeler, sözlük, kullanıcılar, yedekleme, skorlar)
 ├── router.php           Sadece php -S için erişim kuralları
 ├── config.php           Ayarlar, session, include'lar
 ├── api/
-│   ├── game.php         Oyun API'si (start, guess)
+│   ├── game.php         Oyun API'si (start, guess, create_challenge)
 │   └── define.php       Kelime anlamı API'si
 ├── includes/
 │   ├── helpers.php      e(), lower(), upper(), letters(), json_response()
