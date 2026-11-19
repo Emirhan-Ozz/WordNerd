@@ -19,6 +19,20 @@
     });
   }
 
+  const contrastBtn = document.getElementById('contrastBtn');
+  if (contrastBtn) {
+    const sync = () => contrastBtn.setAttribute('aria-pressed', document.documentElement.dataset.contrast === 'high' ? 'true' : 'false');
+    contrastBtn.addEventListener('click', () => {
+      const high = document.documentElement.dataset.contrast !== 'high';
+      if (high) document.documentElement.dataset.contrast = 'high';
+      else delete document.documentElement.dataset.contrast;
+      try { localStorage.setItem('wn_contrast', high ? 'high' : 'normal'); } catch (e) {}
+      sync();
+      document.dispatchEvent(new Event('wn:contrastchange'));
+    });
+    sync();
+  }
+
   const langBtn = document.getElementById('uiLangBtn');
   function refreshLangButton() {
     if (langBtn) langBtn.textContent = WN.uiLang() === 'tr' ? 'EN' : 'TR';

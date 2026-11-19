@@ -23,6 +23,7 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
             var theme = localStorage.getItem('wn_theme') || 'classic';
             if (theme === 'claude') { theme = 'chill'; localStorage.setItem('wn_theme', theme); }
             document.documentElement.dataset.theme = theme;
+            if (localStorage.getItem('wn_contrast') === 'high') { document.documentElement.dataset.contrast = 'high'; }
             document.documentElement.lang = localStorage.getItem('wn_ui_lang') || 'tr';
         } catch (e) {}
     </script>
@@ -56,6 +57,7 @@ function page_header(string $titleKey, string $titleTr, string $active = ''): vo
             <option value="chill" data-i18n="theme_chill">Chill</option>
             <option value="ruby" data-i18n="theme_ruby">Ruby</option>
         </select>
+        <button id="contrastBtn" class="btn small" type="button" aria-pressed="false" title="Yüksek kontrast" data-i18n-title="high_contrast" aria-label="Yüksek kontrast"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
         <button id="uiLangBtn" class="btn small" type="button" title="Arayüz dili">EN</button>
         <?php if ($user !== null): ?>
             <a class="who" href="profile.php" title="Profil" data-i18n-title="nav_profile">

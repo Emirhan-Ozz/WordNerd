@@ -8,6 +8,8 @@
     en: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'],
   };
   const EMOJI = { correct: '🟩', present: '🟨', absent: '⬜' };
+  const EMOJI_HC = { correct: '🟧', present: '🟦', absent: '⬜' };
+  const emoji = () => (document.documentElement.dataset.contrast === 'high' ? EMOJI_HC : EMOJI);
 
   const $ = id => document.getElementById(id);
   const board = $('board'), keyboard = $('keyboard'), toast = $('toast'), sub = $('gameSub');
@@ -274,7 +276,7 @@
     const head = `WordNerd ${state.lang.toUpperCase()} ${state.length} · ` +
       (state.mode === 'daily' ? `${WN.t('share_daily')} ${state.date}` : WN.t('share_unlimited'));
     const score = (state.status === 'won' ? state.rows.length : 'X') + '/' + state.max + (state.hard ? '*' : '');
-    const grid = state.rows.map(r => r.marks.map(m => EMOJI[m]).join('')).join('\n');
+    const grid = state.rows.map(r => r.marks.map(m => emoji()[m]).join('')).join('\n');
     return `${head} · ${score}\n\n${grid}`;
   }
 
@@ -358,6 +360,10 @@
       revealed = true;
       renderSub(true);
     }
+  });
+
+  document.addEventListener('wn:contrastchange', () => {
+    if (dialog.open) $('shareText').textContent = shareText() + (state.mode === 'daily' ? '\n\n' + WN.t('daily_done') : '');
   });
 
   document.addEventListener('wn:langchange', () => {
